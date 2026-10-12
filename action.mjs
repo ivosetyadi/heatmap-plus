@@ -55,7 +55,9 @@ async function run() {
         /* there are staged changes */
       }
       execSync(`git commit -m ${JSON.stringify(message)}`);
-      execSync('git push');
+      // checkout@v4 leaves a detached HEAD, so push explicitly to the branch.
+      const ref = process.env.GITHUB_REF_NAME;
+      execSync(ref ? `git push origin HEAD:${ref}` : 'git push');
       log('Committed and pushed updated heatmap.');
     } catch (e) {
       log(`::warning::Could not commit: ${e.message}. The SVG was still written — add your own commit step.`);
