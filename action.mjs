@@ -45,7 +45,7 @@ async function run() {
     try {
       execSync('git config user.name "github-actions[bot]"');
       execSync('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"');
-      execSync(`git add ${JSON.stringify(outFile)}`);
+      execSync(`git add -f ${JSON.stringify(outFile)}`); // -f: output may be gitignored
       // commit only if staged changes exist
       try {
         execSync('git diff --cached --quiet');
