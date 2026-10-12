@@ -1,14 +1,13 @@
 {
   "name": "heatmap-plus",
   "version": "0.1.0",
-  "description": "A richer GitHub contribution card as an embeddable SVG — streaks, totals, busiest weekday. Cloudflare Worker.",
+  "description": "A richer GitHub contribution card as an SVG — streaks, totals, busiest weekday. GitHub Action, no hosting or token needed.",
   "type": "module",
-  "main": "worker.js",
+  "main": "action.mjs",
   "scripts": {
-    "test": "node test/run.mjs",
-    "deploy": "wrangler deploy"
+    "test": "node test/run.mjs"
   },
-  "keywords": ["github", "contributions", "svg", "readme", "cloudflare-worker", "streak"],
+  "keywords": ["github-action", "contributions", "svg", "readme", "streak", "profile"],
   "author": "Ivo Setyadi",
   "license": "MIT",
   "homepage": "https://ivosetyadi.github.io"

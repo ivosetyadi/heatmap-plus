@@ -1,13 +1,5 @@
-// Heatmap+ — a Cloudflare Worker that renders a richer GitHub contribution card
-// as an embeddable SVG. No API token needed: it reads the PUBLIC contributions
-// calendar at github.com/users/<user>/contributions and computes streaks, totals,
-// and the busiest weekday, then draws a themed SVG.
-//
-// Embed in a README:
-//   ![](https://heatmap.apibase.dev/?user=ivosetyadi)
-//
-// Pure functions (parseContributions, computeStats, renderSVG) are exported so
-// they can be unit-tested in Node without a network or the Workers runtime.
+// Heatmap+ core — pure functions to read a public GitHub contributions
+// calendar and render a contribution card SVG. No network, no I/O here.
 
 // ---- Parsing ------------------------------------------------------------------
 // Extract {date, level} for every day cell. GitHub emits data-date before
@@ -19,14 +11,12 @@ export function parseContributions(html) {
   while ((m = re.exec(html)) !== null) {
     days.push({ date: m[1], level: parseInt(m[2], 10) });
   }
-  // Attach exact counts from tooltips when available: "N contributions on ...".
   const counts = {};
   const tip = /<tool-tip[^>]*for="(contribution-day-component-\d+-\d+)"[^>]*>\s*(No|[\d,]+) contribution/g;
   let t;
   while ((t = tip.exec(html)) !== null) {
     counts[t[1]] = t[2] === 'No' ? 0 : parseInt(t[2].replace(/,/g, ''), 10);
   }
-  // Map tooltip ids to cells by their order of appearance.
   const idRe = /id="(contribution-day-component-\d+-\d+)"/g;
   const ids = [];
   let i;
@@ -56,13 +46,11 @@ export function computeStats(days, headerTotal) {
       longest = Math.max(longest, run);
     } else run = 0;
   }
-  // current streak: consecutive active days ending at the most recent cell
   let current = 0;
   for (let k = sorted.length - 1; k >= 0; k--) {
     if ((sorted[k].count || 0) > 0 || sorted[k].level > 0) current++;
     else break;
   }
-  // busiest weekday (0=Sun..6=Sat)
   const byDow = [0, 0, 0, 0, 0, 0, 0];
   for (const d of sorted) byDow[new Date(d.date + 'T00:00:00Z').getUTCDay()] += d.count || 0;
   const bestDow = byDow.indexOf(Math.max(...byDow));
@@ -84,9 +72,7 @@ export function renderSVG(user, stats, themeName = 'light') {
   const t = THEMES[themeName] || THEMES.light;
   const W = 495,
     H = 195;
-  // mini heatmap: last 182 days as a compact 26x7 grid
   const recent = stats.days.slice(-182);
-  const cols = Math.ceil(recent.length / 7);
   const cell = 9,
     gap = 2,
     gx = 32,
@@ -115,35 +101,3 @@ export function renderSVG(user, stats, themeName = 'light') {
   ${grid}
 </svg>`;
 }
-
-// ---- Worker entrypoint --------------------------------------------------------
-export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    const user = (url.searchParams.get('user') || '').trim();
-    const theme = url.searchParams.get('theme') || 'light';
-    if (!user || !/^[A-Za-z0-9-]{1,39}$/.test(user)) {
-      return new Response('Pass ?user=<github-username>', { status: 400 });
-    }
-    const upstream = await fetch(`https://github.com/users/${user}/contributions`, {
-      headers: { 'User-Agent': 'heatmap-plus', Accept: 'text/html' },
-    });
-    if (!upstream.ok) {
-      return new Response(`GitHub returned ${upstream.status} for "${user}"`, { status: 502 });
-    }
-    const html = await upstream.text();
-    const days = parseContributions(html);
-    if (days.length === 0) {
-      return new Response(`No contribution data for "${user}"`, { status: 404 });
-    }
-    const stats = computeStats(days, totalFromHeader(html));
-    const svg = renderSVG(user, stats, theme);
-    return new Response(svg, {
-      headers: {
-        'content-type': 'image/svg+xml; charset=utf-8',
-        // cache at the edge for 2h; README images are hit often
-        'cache-control': 'public, max-age=7200, s-maxage=7200',
-      },
-    });
-  },
-};

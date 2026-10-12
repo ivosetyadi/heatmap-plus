@@ -1,6 +1,6 @@
 // Offline test suite for Heatmap+. No network — uses a synthetic HTML fixture.
 import assert from 'node:assert';
-import { parseContributions, totalFromHeader, computeStats, renderSVG } from '../worker.js';
+import { parseContributions, totalFromHeader, computeStats, renderSVG } from '../lib.js';
 
 let pass = 0;
 const ok = (c, m) => {

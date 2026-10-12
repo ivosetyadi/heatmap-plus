@@ -5,7 +5,7 @@
 
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
-import { parseContributions, totalFromHeader, computeStats, renderSVG } from './worker.js';
+import { parseContributions, totalFromHeader, computeStats, renderSVG } from './lib.js';
 
 const log = (m) => process.stdout.write(m + '\n');
 
