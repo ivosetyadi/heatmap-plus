@@ -1,0 +1,9 @@
+name = "heatmap-plus"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Custom domain (served at https://heatmap.apibase.dev).
+# Requires the apibase.dev zone to be active on this Cloudflare account.
+routes = [
+  { pattern = "heatmap.apibase.dev", custom_domain = true }
+]
