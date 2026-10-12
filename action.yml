@@ -1,0 +1,32 @@
+name: 'Heatmap+'
+description: 'Generate a richer GitHub contribution card (streaks, totals, busiest weekday) as an SVG committed to your repo.'
+author: 'Ivo Setyadi'
+branding:
+  icon: 'activity'
+  color: 'green'
+
+inputs:
+  user:
+    description: 'GitHub username. Defaults to the repository owner.'
+    required: false
+    default: ''
+  theme:
+    description: 'Card theme: light | dark | dracula.'
+    required: false
+    default: 'light'
+  output:
+    description: 'Path to write the SVG.'
+    required: false
+    default: 'heatmap.svg'
+  commit:
+    description: 'Commit & push the SVG if it changed (true/false).'
+    required: false
+    default: 'true'
+  commit-message:
+    description: 'Commit message used when commit=true.'
+    required: false
+    default: 'chore: update contribution heatmap [skip ci]'
+
+runs:
+  using: 'node20'
+  main: 'action.mjs'
